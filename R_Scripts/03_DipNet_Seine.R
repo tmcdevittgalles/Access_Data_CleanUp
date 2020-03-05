@@ -24,6 +24,8 @@ dip.info.df <- read.csv(  "./Data/Raw_Data/Netting_Info.csv" )
 dip.surv.df <- read.csv( "./Data/Raw_Data/Survey_Spp.csv" )
 
 
+
+
 ## ok lets look at dipnett info first, we need to use this to get the total 
 ## number of dipnets per site
 
