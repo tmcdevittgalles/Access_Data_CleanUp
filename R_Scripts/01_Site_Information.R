@@ -160,3 +160,6 @@ site.info.df$Elev[site.info.df$SiteCode=="PRNTHJV"] <- 319
 ## Ok sweet I have the list of sites that I will use for the analysis this may
 ## change as I am sure some of these sites have 1 visit or so but we can deal
 ## with that later, this is a good place to start
+
+## Saving the site list as an RData 
+save(site.info.df, file = "Data/RData/SiteList.RData")
