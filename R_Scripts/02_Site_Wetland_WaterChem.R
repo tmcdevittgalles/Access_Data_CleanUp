@@ -11,6 +11,7 @@
 
 library(tidyverse)
 library(dplyr)
+library(patchwork)
 
 setwd("~/Desktop/Current_Projects/Data_CleanUp")
 
@@ -100,7 +101,9 @@ hist( log10( site.wet.df$Perim + 1 ))
 max( site.wet.df$Perim, na.rm = T )## very large
 site.wet.df$Perim[site.wet.df$AssmtCode == "CA-GLAKE_20150804"] <-NA
 
-
+pre <- ggplot( site.wet.df, aes( x= log10(Area+1), y = log10(Perim + 1),
+                                  color = (Year))) + 
+  geom_point() + theme_classic() + theme(legend.position = "none")
 
 plot( x= log10(site.wet.df$Area+1), y= log10(site.wet.df$Perim + 1))
 
@@ -281,6 +284,10 @@ site.wet.df$Area[site.wet.df$AssmtCode == "PRPND014_20170607" ]  <- 4800.61
 site.wet.df$Perim[site.wet.df$AssmtCode == "GDPND009_20100603" ]  <- 152
 
 plot( x= log10(site.wet.df$Area+1), y= log10(site.wet.df$Perim + 1))
+
+post <- ggplot( site.wet.df, aes( x= log10(Area+1), y = log10(Perim + 1),
+                                  color = (Year))) + 
+  geom_point() + theme_classic() + theme(legend.position = "none")
 #identify( x= log10(site.wet.df$Area+1), y= log10(site.wet.df$Perim + 1))
 # Code to help figure out what sites assements had outliers in either variable
 # site.wet.df[207,]
@@ -296,7 +303,7 @@ site.wet.df$Juncus[is.na(site.wet.df$Juncus)] <- 0
 site.wet.df$Typha[is.na(site.wet.df$Typha)] <- 0
 site.wet.df$Other[is.na(site.wet.df$Other)] <- 0
 
-## Combinding the two data frames
+## Combinding the two data frames 
 Site.df <- left_join(site.wet.df, site.info.df, by = "SiteCode")
 
 ## Ok lets check to make sure there are no outliers in perimeter or area
@@ -596,39 +603,60 @@ site.water.df <- site.water.df %>%
 
 ## ok lets filter out the unused SiteCodes
 
-dim(site.water.df) # 3174 x 20
+dim(site.water.df) # 3174 x 24
 
-site.water.df <-site.water.df %>%
-  filter( SiteCode %in% site.info.df$SiteCode )
+#### Commenting this out for now ####
 
+#site.water.df <-site.water.df %>%
+#  filter( SiteCode %in% site.info.df$SiteCode )
 
-dim(site.water.df) # 1836 X 20 wow, we cut out 1338 site assments
+# 
+# dim(site.water.df) # 1836 X 20 wow, we cut out 1338 site assments
 
-unique( site.water.df$SiteCode ) #165 levels how does that compare to the Sitelist
+unique( site.water.df$SiteCode ) # 914 levels how does that compare to
+                                 # site wetland data 
 
-unique( site.info.df$SiteCode ) # 169 levels, 4 SiteCodes don't have SiteAssmt
-
+unique( site.wet.df$SiteCode ) # 930 levels
+                               
 ## cool lets clean up so data
 
 ##first lets look at the relationship betweem conductivity and TDS
 
 plot( x = log10(site.water.df$Conduct+1), log10(site.water.df$TDS+1))
+#identify( x = log10(site.water.df$Conduct+1), log10(site.water.df$TDS+1))
 
-ggplot( site.water.df, aes(x = log10(Conduct+1), log10(TDS+1),color=Year))+
-  geom_point(size=2, alpha=.5)+ theme_classic() +
-  theme(legend.key.size = unit(1, "cm"),
-        legend.text=element_text(size=18), 
-        legend.title=element_text( size=18)) 
+site.water.df[2263,]
+site.water.df[site.water.df$SiteCode=="PERRY2",]
+## hmm there seems to be a couple of sites with negative values lets see what
+## is up with that
+
+## 9942 has a negatvvie balues, should be a tad higher
+site.water.df$TDS[ site.water.df$AssmtCode == "9942_20100712"] <- .77
+
+
+## For Perry2 i am just going to switch the signs
+site.water.df$TDS[ site.water.df$AssmtCode == "PERRY2_20100630"] <- .29
+
+pre <- ggplot( site.water.df, aes(x = log10(Conduct+1), log10(TDS+1),color=Year))+
+  geom_point(size=2, alpha=.5)+ theme_classic() + #facet_wrap(~Year)+
+  theme(legend.position = "none") 
+
 
 ## seems like there is a unit that is off for years 2009-2014, lets try ato fix
 ## that
 
+site.water.df$TDS[ site.water.df$Year == 1999 ] <- site.water.df$TDS[ site.water.df$Year == 1999 ] * 1000
+site.water.df$TDS[ site.water.df$Year == 2004 ] <- site.water.df$TDS[ site.water.df$Year == 2004 ] * 1000
+site.water.df$TDS[ site.water.df$Year == 2005 ] <- site.water.df$TDS[ site.water.df$Year == 2005 ] * 1000
+site.water.df$TDS[ site.water.df$Year == 2007 ] <- site.water.df$TDS[ site.water.df$Year == 2007 ] * 1000
+site.water.df$TDS[ site.water.df$Year == 2008 ] <- site.water.df$TDS[ site.water.df$Year == 2008 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2009 ] <- site.water.df$TDS[ site.water.df$Year == 2009 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2010 ] <- site.water.df$TDS[ site.water.df$Year == 2010 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2011 ] <- site.water.df$TDS[ site.water.df$Year == 2011 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2012 ] <- site.water.df$TDS[ site.water.df$Year == 2012 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2013 ] <- site.water.df$TDS[ site.water.df$Year == 2013 ] * 1000
 site.water.df$TDS[ site.water.df$Year == 2014 ] <- site.water.df$TDS[ site.water.df$Year == 2014 ] * 1000
+
 
 
 plot( x = log10(site.water.df$Conduct+1), log10(site.water.df$TDS+1))
@@ -834,12 +862,238 @@ site.water.df$Conduct[ site.water.df$AssmtCode == "EAGLEGCP_20140626"] <- 2925
 site.water.df$TDS[ site.water.df$AssmtCode == "EAGLEGCP_20140626"] <- 2070
 
 
+## 12608 first visit in 2011 is law for conductivit 
+site.water.df$Conduct[ site.water.df$AssmtCode == "12608_20110617"] <- 925
 
-ggplot( site.water.df, aes(x = log10(Conduct+1), log10(TDS+1),color=Year))+
+## 9942 visit has a low conductivity
+site.water.df$Conduct[ site.water.df$AssmtCode == "9942_20080722"] <- 352
+
+## Lassen was one of the good ones that got elevated
+site.water.df$TDS[ site.water.df$AssmtCode == "CA-LVBW1_20100827"] <- 12
+
+## CO-11843 was one of the good ones that got elevated
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-11843_20090728"] <- 1.157
+
+## CO-CUE1 was one of the good ones that got elevated
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-CUE1_20110622"] <-159
+
+## CO-FFRC was one of the good ones that got elevated
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-GBH2_20110617"] <- 294
+
+## 10585's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "10585_20080722"] <- 375
+
+## 12376's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "12376_20090616"] <- 209
+
+## 12612's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "12612_20100608"] <- 206
+
+## J4_02's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "J4-02_20100730"] <- 263
+
+## MTPND014's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "MTPND014_20100804"] <- 335
+
+## OR-DOG's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "OR-DOG_20100630"] <- 121
+
+## OR-DWAMA's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "OR-DWAMA_20100628"] <- 251
+
+## a lot going wrong in 12585
+site.water.df$Conduct[ site.water.df$AssmtCode == "12585_20090702"] <- 1937
+site.water.df$Conduct[ site.water.df$AssmtCode == "12585_20100607"] <- 1409
+site.water.df$Conduct[ site.water.df$AssmtCode == "12585_20100629"] <- 1770
+
+site.water.df$TDS[ site.water.df$AssmtCode == "12585_20100629"] <- 1036
+
+site.water.df$Salinity[ site.water.df$AssmtCode == "12585_20100629"] <- .74
+
+## 12598 a lot of stuff is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "12598_20100629"] <- 112.96
+site.water.df$TDS[ site.water.df$AssmtCode == "12598_20100629"] <- 96
+site.water.df$Salinity[ site.water.df$AssmtCode == "12598_20100629"] <- .07
+
+## CO-COWSH's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-COWSH_20070627"] <- 753
+
+## CO-HOFLY's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-HOFLY_20090805"] <- 606
+
+## CO-HOFLY's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-HOFLY_20090805"] <- 606
+
+## CO-HOFLY's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-SAFE_20110704"] <- 1386
+
+## SNPND001's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "SNPND001_20090629"] <- 626
+site.water.df$Conduct[ site.water.df$AssmtCode == "SNPND001_20110615"] <- 674
+
+## 0000's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "0000_20100804"] <- 140.3
+
+## 104601's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "104601_20090721"] <- 162
+
+## 11307's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "11307_20090527"] <- 1625
+
+## 12598's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "11307_20090527"] <- 1625
+
+## 16264's conductiviy was too low
+site.water.df$TDS[ site.water.df$AssmtCode == "16264_20070626"] <- 4.8
+
+## 50's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "50_20090616"] <- 427
+
+## ALAGOLF's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "ALAGOLF2_20100812"] <- 250
+
+## CO-FFRC's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-FFRC_20110627"] <- 161
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-FFRC_20110627"] <- 161
+
+## CO-DEER's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-DEER_20090616"] <- 557
+
+## CO-DEER's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-DEER_20090616"] <- 532
+
+## C09's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "C09_20090602"] <- 500
+
+## BOOBRCOy's conductiviy was too low
+site.water.df$Conduct[ site.water.df$AssmtCode == "BOOBRCO_20090729"] <- 358
+
+## 6567's tds is off
+site.water.df$TDS[ site.water.df$AssmtCode == "6567_20080716"] <- 116
+
+## BIGPR's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "BIGPR_20090804"] <- 353
+
+## CO-12617's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-12617_20090623"] <- 90
+
+## CO-CLAU's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-CLAY_20090713"] <- 123
+
+## CO-CUE1's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-CUE1_20110818"] <- 191
+
+## CO-POOD's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-POOD_20080516"] <-1430
+
+## MUD17's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "MUD17_20090622"] <- 2380
+
+## OHPND003's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "OHPND003_20090724"] <- 70.4
+
+## TRINCH1's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "TRINCH1_20100813"] <- 99.8
+
+## 10559's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "10559_20070628"] <- 71.3
+
+## 16264's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "16264_20070626"] <- 480
+site.water.df$Conduct[ site.water.df$AssmtCode == "16264_20070626"] <- 721
+
+## 207750's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "207750_20090709"] <- 275
+
+## CDOW2's TDS is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CDOW2_20090626"] <- 260.45
+
+## CO_FREEs TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-FREE_20080724"] <- 150
+
+## CO-LPAD's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-LPAD_20080717"] <- 170
+
+## F4-01's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "F4-01_20100719"] <- 698
+
+##  SLCRO13's TDS is off
+site.water.df$TDS[ site.water.df$AssmtCode == "SLCRO13_20150715"] <- 220
+
+##  10983's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "10983_20090803"] <- 511
+
+##  12653's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "12653_20100722"] <- 1825
+
+##  12958's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "12958_20100602"] <- 130
+
+##  CA-SHROM's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CA-SHROM_20100726"] <- 203
+
+##  CHDVL's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CHDVL_20100618"] <- 280
+
+##  CO-11843's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-11843_20090608"] <- 980
+site.water.df$TDS[ site.water.df$AssmtCode == "CO-11843_20090728"] <- 1157
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-11843_20090728"] <- 1644
+
+##  MTPND026's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "MTPND026_20090511"] <- 233
+
+##  WY-MRL01's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "WY-MRL01_20040816"] <- 275
+
+##  11307's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "11307_20090527"] <- 625
+
+##  12607's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "12607_20070702"] <- 405
+
+##  CA-MUD65's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CA-MUD65_20130730"] <- 548
+
+##  WEEDPR's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "WEEDPR_20090727"] <- 286
+
+##  WY-MRL01's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "WY-MRL01_20040816"] <- 275
+
+##  11928's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "11928_20070712"] <- 26
+
+##  BNPND001's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "BNPND001_20090512"] <- 25
+
+##  CO-6132's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-6132_20090521"] <- 1350
+
+##  CO-6132's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "CO-UGDU_20110815"] <- 1310
+
+##  CO-OHPND0326132's Conduct is off
+site.water.df$Conduct[ site.water.df$AssmtCode == "OHPND032_20110615"] <- 542
+
+##  PERRY2's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "PERRY2_20100630"] <- 92
+
+##  SLA09's Conduct is off
+site.water.df$TDS[ site.water.df$AssmtCode == "SLA09_20170703"] <- 35.5
+
+plot( x = log10(site.water.df$Conduct+1), log10(site.water.df$TDS+1))
+identify( x = log10(site.water.df$Conduct+1), log10(site.water.df$TDS+1))
+
+site.water.df[2892,]
+site.water.df[site.water.df$SiteCode=="PERRY2",]
+
+post<- ggplot( site.water.df, aes(x = log10(Conduct+1), log10(TDS+1),color=Year))+
   geom_point(size=2, alpha=.5)+ theme_classic() +
-  theme(legend.key.size = unit(1, "cm"),
-        legend.text=element_text(size=18), 
-        legend.title=element_text( size=18)) + facet_wrap(~Year)
+  theme(legend.position = "none") 
+
+(pre +post )
+
 
 ### Sweet Conductivity and TDS are looking pretty damn good, not we need to
 ### fix Salinity
@@ -1053,6 +1307,11 @@ site.water.df$Salinity[ site.water.df$AssmtCode == "CA-BN018_20150519"] <- 248
 
 ## One temp looks off
 site.water.df$Temp[ site.water.df$AssmtCode == "SF41_20140612"] <- 38
+
+
+
+## Salinigt non focal sites
+site.water.df$Salinity[ site.water.df$AssmtCode == "9942_20100712"] <- .58
 
 
 ## Ok lets beging to look at density plots

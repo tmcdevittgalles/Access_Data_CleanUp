@@ -99,7 +99,7 @@ site.info.df$PropName[site.info.df$PropName=="RUSSEL LAKES SWA"] <-
   "RUSSELL LAKES SWA"
 
 
-site.info.df[site.info.df$SiteCode=="G2LV",] #Just checking out the lat and 
+site.info.df[site.info.df$SiteCode=="BLANCA4",] #Just checking out the lat and 
 # long for this site
 
 # Ok lets remove all sites that are not from California
