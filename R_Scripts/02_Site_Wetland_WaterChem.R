@@ -76,21 +76,21 @@ dim(site.wet.df) # 3287 x 15
 ## Loading in premade sitelist as r data
 load(file="./Data/RData/SiteList.RData")
 
-site.wet.df <- site.wet.df %>%
-  filter( SiteCode %in% site.info.df$SiteCode )
+###### Commenting out the focal sitecode filter ######
 
-dim(site.wet.df) # 1872 X 15 wow, we cut out 1415 site assments
+#site.wet.df <- site.wet.df %>%
+#  filter( SiteCode %in% site.info.df$SiteCode )
 
-unique( site.wet.df$SiteCode ) #165 levels how does that compare to the Sitelist
 
-unique( site.info.df$SiteCode ) # 169 levels, 4 SiteCodes don't have SiteAssmt
+dim(site.wet.df) # 3287 X 18
 
+unique( site.wet.df$SiteCode ) # 930 unique SiteCodes
 
 ##### data clean up site wetland info ###
 #Area
 hist( log10( site.wet.df$Area + 1 ))
-max( site.wet.df$Area, na.rm = T )## very large
-site.wet.df[which.max( site.wet.df$Area),] # Ca-Glake is the large site just
+max( site.wet.df$Area, na.rm = T )## hold over for very large site
+ site.wet.df[which.max( site.wet.df$Area),] # Ca-Glake is the large site just
 # going to put NA
 site.wet.df$Area[site.wet.df$AssmtCode == "CA-GLAKE_20150804"] <-NA
 
@@ -189,10 +189,102 @@ site.wet.df$Perim[site.wet.df$AssmtCode == "CA-EDWD_20100524" ] <- 230
 ## Changing perimeter of PRNTH2 form 55 to 155
 site.wet.df$Perim[site.wet.df$AssmtCode == "PRNTH2_20190611" ] <- 155 
 
+## Looks like site code 12678 area is missing some digits in the perim
+## I want to verify this with the paper data sheets
+
+site.wet.df$Perim[site.wet.df$AssmtCode == "12678_20070612" ] <- 126
+site.wet.df$Perim[site.wet.df$AssmtCode == "12678_20110629" ] <- 110
+
+## Site G5-06, has an issue with one visit's area missing a digit
+site.wet.df$Area[site.wet.df$AssmtCode == "G5-06_20100816" ] <- 487.3
+
+# OR-SLDEE is a very large lake so area is way off
+site.wet.df$Area[site.wet.df$AssmtCode == "OR-SLDEE_20100830" ] <- 52093
+
+# CO-DONDO looks like a smal pond so perim is way off
+site.wet.df$Perim[site.wet.df$AssmtCode == "CO-DONDO_20080718" ] <- 34.37
+
+# CO-TEDR area is way off for the first visit in 2011
+site.wet.df$Area[site.wet.df$AssmtCode == "CO-TEDR_20110706" ] <- 6402.3
+
+# G2LV area seems a bit off reduce by one digit
+site.wet.df$Area[site.wet.df$AssmtCode == "G2LV_20090521" ] <- 821.2
+
+# MUD area seems a bit off reduce by one digit
+site.wet.df$Area[site.wet.df$AssmtCode == "MUD20_20110531" ] <- 105.3
+
+# 9942 area seems a bit off reduce by one digit
+site.wet.df$Perim[site.wet.df$AssmtCode == "9942_20100712" ] <- 61
+
+# SLCPO02 area seems a bit off reduce by one digit
+site.wet.df$Perim[site.wet.df$AssmtCode == "SLCPO02_20150615" ] <- 151.9
+
+# F4-01 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "F4-01_20100730" ] <- 110
+
+# Higel1 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "HIGEL1_20100809" ] <- 190
+
+# 12658 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "12658_20100722" ] <- 214
+
+# H4-01 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "H5-01_20100816" ] <- 1056
+
+# J4-02 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "J4-02_20100730" ] <- 1087
+site.wet.df$Area[site.wet.df$AssmtCode == "J4-02_20100730" ] <- 23920.66
+
+# 0000 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "0000_20100909" ] <- 641
+
+# 0000 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "EGGL3_20100818" ] <- 531
+
+# Blanca4perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "BLANCA4_20100811" ] <- 1040
+
+# H5-01 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "H5-01_20100816" ] <- 1056
+
+# 12573 perim is way off 
+site.wet.df$Perim[site.wet.df$AssmtCode == "12573_20100720" ] <- 193
+
+# CA-Shrom  perim is off a bit and should check with data sheets 
+site.wet.df$Perim[site.wet.df$AssmtCode == "CA-SHROM_20100614" ] <- 153
+
+# Donut perim is off a bit and should check with data sheets 
+site.wet.df$Perim[site.wet.df$AssmtCode == "DONUT_20100622" ] <- 269
+
+# Buffalo perim is off a bit and should check with data sheets 
+site.wet.df$Perim[site.wet.df$AssmtCode == "BUFFALO_20100909" ] <- 172
+
+# TRUTLE1 perim is off a bit and should check with data sheets 
+site.wet.df$Perim[site.wet.df$AssmtCode == "TURTLE1_20100819" ] <- 136
+
+# TRUTLE1 perim is off a bit and should check with data sheets 
+site.wet.df$Perim[site.wet.df$AssmtCode == "12939_20100628" ] <- 146
+
+site.wet.df$Perim[site.wet.df$AssmtCode == "CA-BN003_20100713" ]  <- 121
+
+## PRPDN005 early is wrong, lets fix that should be 83 instead of 283
+
+site.wet.df$Perim[site.wet.df$AssmtCode == "PRPND005_20100729" ]  <- 83
+site.wet.df$Area[site.wet.df$AssmtCode == "PRPND005_20100729" ]  <- 473
+
+## quick also looks off so lets change that
+
+site.wet.df$Perim[site.wet.df$AssmtCode == "PRPND014_20170607" ]  <- 280
+site.wet.df$Area[site.wet.df$AssmtCode == "PRPND014_20170607" ]  <- 4800.61
+
+# Garin 9 is off
+site.wet.df$Perim[site.wet.df$AssmtCode == "GDPND009_20100603" ]  <- 152
 
 plot( x= log10(site.wet.df$Area+1), y= log10(site.wet.df$Perim + 1))
 #identify( x= log10(site.wet.df$Area+1), y= log10(site.wet.df$Perim + 1))
-
+# Code to help figure out what sites assements had outliers in either variable
+# site.wet.df[207,]
+# site.wet.df[site.wet.df$SiteCode=="12939",]
 
 ## ok i think fixing the perimeter was the most important step, feeling good
 ## about that now lets improve the rest, i think most things remaining is simply
@@ -413,7 +505,6 @@ filter( Site.df, PropName == "GARIN/DRY CREEK PIONEER REGIONAL PARK")  %>%
 
 
 ## Garin looks good except garin 9 is very large , man do i hate GDPND010
-
 
 Site.df$Perim[Site.df$AssmtCode == "GDPND009_20100603" ]  <- 152
 

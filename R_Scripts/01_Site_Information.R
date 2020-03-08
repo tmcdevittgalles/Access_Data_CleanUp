@@ -99,7 +99,7 @@ site.info.df$PropName[site.info.df$PropName=="RUSSEL LAKES SWA"] <-
   "RUSSELL LAKES SWA"
 
 
-# site.info.df[site.info.df$SiteCode=="G2LV",] Just checking out the lat and 
+site.info.df[site.info.df$SiteCode=="G2LV",] #Just checking out the lat and 
 # long for this site
 
 # Ok lets remove all sites that are not from California
@@ -166,6 +166,6 @@ site.info.df$Elev[site.info.df$SiteCode=="PRNTHJV"] <- 319
 ## with that later, this is a good place to start
 
 ## Saving the site list as an RData 
-save(site.info.df, file = "Data/RData/SiteList.RData")
+#save(site.info.df, file = "Data/RData/SiteList.RData")
 
 
